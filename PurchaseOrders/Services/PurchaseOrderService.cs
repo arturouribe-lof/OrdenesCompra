@@ -52,14 +52,6 @@ namespace PurchaseOrders.Services
         }
 
 
-        public void UpdateOrder(PurchaseOrder po)
-        {
-            po.UpdatedAt = DateTime.Now;
-            _repo.Update(po);
-            _ctx.SaveChanges();
-        }
-
-
         public void SoftDeleteOrder(int id)
         {
             _repo.SoftDelete(id);
@@ -84,6 +76,20 @@ namespace PurchaseOrders.Services
             return _ctx.Products
                 .Where(p => p.IsActive)
                 .ToList();
+        }
+
+        public void CancelOrders(List<int> orderIds)
+        {
+            var orders = _ctx.PurchaseOrders
+                .Where(o => orderIds.Contains(o.Id))
+                .ToList();
+
+            foreach (var order in orders)
+            {
+                order.IsDeleted = true;
+            }
+
+            _ctx.SaveChanges();
         }
     }
 }

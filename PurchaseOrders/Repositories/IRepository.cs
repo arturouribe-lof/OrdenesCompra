@@ -34,7 +34,7 @@ namespace PurchaseOrders.Repositories
             .Include("Provider")
             .Include("Lines.Product")
             .AsQueryable();
-            if (!includeDeleted) q = q.Where(x => !x.IsDeleted);
+            //if (!includeDeleted) q = q.Where(x => !x.IsDeleted);
             return q.ToList();
         }
 
@@ -48,6 +48,10 @@ namespace PurchaseOrders.Repositories
             .FirstOrDefault(x => x.Id == id);
         }
 
+        public Product GetProductById(int id)
+        {
+            return _ctx.Products.FirstOrDefault(p => p.Id == id);
+        }
 
         public void Add(PurchaseOrder po)
         {
@@ -57,7 +61,7 @@ namespace PurchaseOrders.Repositories
 
         public void Update(PurchaseOrder po)
         {
-            _ctx.Entry(po).State = EntityState.Modified;
+            // vacío, ahora toda la lógica está en el Service
         }
 
 

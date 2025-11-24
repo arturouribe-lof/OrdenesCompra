@@ -33,6 +33,7 @@ namespace PurchaseOrders.Views
             this.lblInvoice = new System.Windows.Forms.Label();
             this.txtInvoice = new System.Windows.Forms.TextBox();
             this.dgvItems = new System.Windows.Forms.DataGridView();
+            this.colId = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colProduct = new System.Windows.Forms.DataGridViewComboBoxColumn();
             this.colQuantity = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colNotes = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -99,6 +100,7 @@ namespace PurchaseOrders.Views
             this.dgvItems.AllowUserToDeleteRows = true;
             this.dgvItems.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvItems.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.colId,
             this.colProduct,
             this.colQuantity,
             this.colNotes});
@@ -106,6 +108,13 @@ namespace PurchaseOrders.Views
             this.dgvItems.Name = "dgvItems";
             this.dgvItems.Size = new System.Drawing.Size(550, 220);
             this.dgvItems.TabIndex = 6;
+
+            // 
+            // colId
+            // 
+            colId.Name = "colId";
+            colId.HeaderText = "Id";
+            colId.Visible = false;
 
             // 
             // colProducto
@@ -176,6 +185,7 @@ namespace PurchaseOrders.Views
         private System.Windows.Forms.Label lblInvoice;
         private System.Windows.Forms.TextBox txtInvoice;
         private System.Windows.Forms.DataGridView dgvItems;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colId;
         private System.Windows.Forms.DataGridViewComboBoxColumn colProduct;
         private System.Windows.Forms.DataGridViewTextBoxColumn colQuantity;
         private System.Windows.Forms.DataGridViewTextBoxColumn colNotes;

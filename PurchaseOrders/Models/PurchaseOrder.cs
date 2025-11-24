@@ -19,7 +19,6 @@ namespace PurchaseOrders.Models
 
         public string InvoiceNumber { get; set; } // N. de factura (opcional)
         public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
         public bool IsDeleted { get; set; } = false; // soft-delete
 
 

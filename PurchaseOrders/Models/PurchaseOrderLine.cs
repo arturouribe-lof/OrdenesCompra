@@ -16,8 +16,9 @@ namespace PurchaseOrders.Models
 
         public int LineNumber { get; set; }
         public int ProductId { get; set; }
-        public virtual Product Product { get; set; }
+        public virtual  Product Product { get; set; }
         public decimal Quantity { get; set; }
         public string Notes { get; set; }
+        public int IsActive { get; set; } = 1;
     }
 }

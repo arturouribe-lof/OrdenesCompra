@@ -13,16 +13,21 @@ namespace PurchaseOrders.Views
         private readonly PurchaseOrder _order;
         private List<Product> _products;
 
-        public OrderForm(PurchaseOrderController controller, PurchaseOrder order = null)
+        public OrderForm(PurchaseOrderController controller, PurchaseOrder order = null, bool esConsulta = false)
         {
             InitializeComponent();
             _controller = controller;
             _order = order ?? new PurchaseOrder { CreatedAt = DateTime.Now };
 
+            this.StartPosition = FormStartPosition.CenterParent;
+
             LoadBranches();
             LoadProviders();
             LoadProducts();
             LoadOrderData();
+
+            if (esConsulta)
+                btnGuardar.Enabled = false;
         }
 
         private void LoadBranches()
@@ -64,7 +69,12 @@ namespace PurchaseOrders.Views
 
                 foreach (var line in _order.Lines)
                 {
-                    dgvItems.Rows.Add(line.ProductId, line.Quantity, line.Notes);
+                    dgvItems.Rows.Add(
+                        line.Id,           // colId
+                        line.ProductId,    // colProduct (combo)
+                        line.Quantity,     // colQuantity
+                        line.Notes         // colNotes
+                    );
                 }
             }
         }
@@ -74,7 +84,6 @@ namespace PurchaseOrders.Views
             _order.BranchId = (int)cboBranch.SelectedValue;
             _order.ProviderId = (int)cboProvider.SelectedValue;
             _order.InvoiceNumber = txtInvoice.Text;
-            _order.UpdatedAt = DateTime.Now;
 
             // limpiar líneas viejas
             _order.Lines.Clear();
@@ -94,10 +103,7 @@ namespace PurchaseOrders.Views
                     _order.Lines.Add(line);
             }
 
-            if (_order.Id == 0)
                 _controller.SaveNewOrder(_order);
-            else
-                _controller.SaveEditedOrder(_order);
 
             MessageBox.Show("Orden guardada correctamente.");
             this.DialogResult = DialogResult.OK;

@@ -19,7 +19,6 @@ namespace PurchaseOrders.Controllers
 
 
         public void SaveNewOrder(PurchaseOrder po) => _service.CreateOrder(po);
-        public void SaveEditedOrder(PurchaseOrder po) => _service.UpdateOrder(po);
         public void RemoveOrder(int id) => _service.SoftDeleteOrder(id);
         public List<Branch> GetBranches()
         {
@@ -33,6 +32,10 @@ namespace PurchaseOrders.Controllers
         public List<Product> GetProducts()
         {
             return _service.GetProducts();
+        }
+        public void CancelOrders(List<int> orderIds)
+        {
+            _service.CancelOrders(orderIds);
         }
     }
 }
