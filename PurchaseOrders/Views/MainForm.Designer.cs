@@ -112,7 +112,7 @@ namespace PurchaseOrders.Views
             // btnExportar
             // 
             this.btnExportar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.btnExportar.Location = new System.Drawing.Point(215, 341);
+            this.btnExportar.Location = new System.Drawing.Point(210, 341);
             this.btnExportar.Margin = new System.Windows.Forms.Padding(2);
             this.btnExportar.Name = "btnExportar";
             this.btnExportar.Size = new System.Drawing.Size(90, 24);

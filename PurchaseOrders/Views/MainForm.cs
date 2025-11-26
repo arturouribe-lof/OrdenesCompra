@@ -30,7 +30,7 @@ namespace PurchaseOrders.Views
             // Asociamos el evento Load al método MainForm_Load
             this.Load += MainForm_Load;
 
-            this.Width = dgvOrders.PreferredSize.Width - 169;
+            this.Width = dgvOrders.PreferredSize.Width-36;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -385,8 +385,25 @@ namespace PurchaseOrders.Views
                 Paragraph p = new Paragraph();
                 p.SpacingAfter = 6;
 
+                // dibujas el rectángulo
+                cb.Rectangle(box);
+
+                //  AQUI AGREGA EL FOLIO ⬇️ 
+                Phrase folioPhrase = new Phrase();
+                folioPhrase.Add(new Chunk("Folio: ", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10)));
+                folioPhrase.Add(new Chunk(order.InvoiceNumber.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 10)));
+
+                ColumnText.ShowTextAligned(
+                    cb,
+                    Element.ALIGN_RIGHT,
+                    folioPhrase,
+                    x + boxWidth - 20,   // margen derecho
+                    y + boxHeight - 30,  // un poco abajo del borde superior
+                    0
+                );
+
                 // Encabezados
-                p.Add(new Phrase("Razón Social\n", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
+                p.Add(new Phrase(order.Branch.Name + "\n\n", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
                 p.Add(new Phrase("Proveedor\n", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
                 p.Add(new Phrase(order.Provider.Name + "\n\n", FontFactory.GetFont(FontFactory.HELVETICA, 11)));
 
@@ -399,25 +416,44 @@ namespace PurchaseOrders.Views
 
                 p.Add(new Phrase("\n")); // espacio extra antes de los artículos
 
-                // Listado de artículos con más separación y alineación
+                // Tabla para artículos (2 columnas)
+                PdfPTable table = new PdfPTable(2);
+                table.WidthPercentage = 100;
+                table.SetWidths(new float[] { 80, 20 }); // descripción 80%, cantidad 20%
+                table.SpacingBefore = 10f;
+                table.SpacingAfter = 10f;
+
                 foreach (var line in order.Lines.Where(l => l.IsActive == 1))
                 {
-                    Paragraph item = new Paragraph();
-                    item.Add(new Phrase(line.Product.Description, FontFactory.GetFont(FontFactory.HELVETICA, 11)));
+                    // Celda de descripción
+                    PdfPCell descCell = new PdfPCell(
+                        new Phrase(line.Product.Description, FontFactory.GetFont(FontFactory.HELVETICA, 11))
+                    );
+                    descCell.Border = 0;
+                    descCell.PaddingBottom = 4;
 
-                    item.Add(new Chunk(new iTextSharp.text.pdf.draw.VerticalPositionMark())); // separador flexible
+                    // Línea punteada inferior
+                    descCell.CellEvent = new DottedBorderVerticalAndBottom();
 
-                    item.Add(new Phrase(
-                        line.Quantity.ToString("0.##"),
-                        FontFactory.GetFont(FontFactory.HELVETICA, 11)
-                    ));
+                    // Celda de cantidad
+                    PdfPCell qtyCell = new PdfPCell(
+                        new Phrase(line.Quantity.ToString("0.##"), FontFactory.GetFont(FontFactory.HELVETICA, 11))
+                    );
+                    qtyCell.Border = 0;
+                    qtyCell.HorizontalAlignment = Element.ALIGN_CENTER;
+                    qtyCell.PaddingBottom = 4;
 
-                    item.SpacingAfter = 5; // ← separación entre líneas
-                    p.Add(item);
+                    // Línea vertical punteada + línea horizontal punteada
+                    qtyCell.CellEvent = new DottedBorderVerticalAndBottom();
+
+                    table.AddCell(descCell);
+                    table.AddCell(qtyCell);
                 }
 
+                p.Add(table);
+
                 // Espacio antes de la firma (aprox. 5 cm)
-                p.Add(new Phrase("\n\n\n\n\n"));
+                p.Add(new Phrase("\n\n\n\n\n\n\n\n\n"));
 
                 p.Add(new Phrase("Nombre y firma", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
 
@@ -430,6 +466,25 @@ namespace PurchaseOrders.Views
             doc.Close();
         }
 
+        public class DottedBorderVerticalAndBottom : IPdfPCellEvent
+        {
+            public void CellLayout(PdfPCell cell, iTextSharp.text.Rectangle position, PdfContentByte[] canvases)
+            {
+                PdfContentByte cb = canvases[PdfPTable.LINECANVAS];
+                cb.SetLineDash(2f, 2f);
+
+                // Línea vertical punteada
+                cb.MoveTo(position.Left, position.Bottom);
+                cb.LineTo(position.Left, position.Top);
+                cb.Stroke();
+
+                // Línea horizontal punteada
+                cb.MoveTo(position.Left, position.Bottom);
+                cb.LineTo(position.Right, position.Bottom);
+                cb.Stroke();
+            }
+
+        }
 
 
 
