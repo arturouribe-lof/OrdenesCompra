@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="Controllers\PurchaseOrderController.cs" />
     <Compile Include="Data\AppDbContext.cs" />
+    <Compile Include="Helpers\PurchaseOrderPdfGenerator.cs" />
     <Compile Include="Repositories\IRepository.cs" />
     <Compile Include="Services\PurchaseOrderService.cs" />
     <Compile Include="Models\Branch.cs" />
@@ -111,7 +112,9 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Resources\logo.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

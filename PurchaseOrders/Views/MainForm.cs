@@ -12,6 +12,9 @@ using System.Windows.Forms;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.IO;
+using Rectangle = iTextSharp.text.Rectangle;
+using PurchaseOrders.Helpers;
+using System.Diagnostics;
 
 namespace PurchaseOrders.Views
 {
@@ -329,166 +332,24 @@ namespace PurchaseOrders.Views
                 FileName = "Ordenes.pdf"
             };
 
+            var pdf = new PurchaseOrderPdfGenerator();
+
             if (sfd.ShowDialog() == DialogResult.OK)
             {
                 // 5. Generar el PDF
-                GeneratePdf(selectedOrders, sfd.FileName);
+                pdf.Generate(selectedOrders, sfd.FileName = $"Ordenes_{DateTime.Now:yyyyMMdd}.pdf", @"C:\Users\SITE\source\repos\PurchaseOrders\PurchaseOrders\Resources\logo.png");
 
                 MessageBox.Show("PDF exportado correctamente.",
                                 "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-        }
 
-
-        private void GeneratePdf(List<PurchaseOrder> orders, string path)
-        {
-            Document doc = new Document(PageSize.A4);
-            PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream(path, FileMode.Create));
-
-            doc.Open();
-
-            PdfContentByte cb = writer.DirectContent;
-
-            float pageWidth = PageSize.A4.Width;
-            float pageHeight = PageSize.A4.Height;
-
-            float boxWidth = pageWidth / 2;
-            float boxHeight = pageHeight / 2;
-
-            int cardIndex = 0;
-
-            foreach (var order in orders)
-            {
-                if (cardIndex % 4 == 0)
-                    doc.NewPage();
-
-                int pos = cardIndex % 4;
-
-                float x = (pos % 2 == 0) ? 0 : boxWidth;
-                float y = (pos < 2) ? boxHeight : 0;
-
-                // Marco del recuadro
-                iTextSharp.text.Rectangle box = new iTextSharp.text.Rectangle(x, y, x + boxWidth, y + boxHeight);
-                box.Border = iTextSharp.text.Rectangle.BOX;
-                box.BorderWidth = 0.8f;
-                cb.Rectangle(box);
-
-                // ColumnText para contenido
-                ColumnText ct = new ColumnText(cb);
-                ct.SetSimpleColumn(
-                    x + 25,
-                    y + 25,
-                    x + boxWidth - 25,
-                    y + boxHeight - 25
-                );
-
-                Paragraph p = new Paragraph();
-                p.SpacingAfter = 6;
-
-                // dibujas el rectángulo
-                cb.Rectangle(box);
-
-                //  AQUI AGREGA EL FOLIO ⬇️ 
-                Phrase folioPhrase = new Phrase();
-                folioPhrase.Add(new Chunk("Folio: ", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 10)));
-                folioPhrase.Add(new Chunk(order.InvoiceNumber.ToString(), FontFactory.GetFont(FontFactory.HELVETICA, 10)));
-
-                ColumnText.ShowTextAligned(
-                    cb,
-                    Element.ALIGN_RIGHT,
-                    folioPhrase,
-                    x + boxWidth - 20,   // margen derecho
-                    y + boxHeight - 30,  // un poco abajo del borde superior
-                    0
-                );
-
-                // Encabezados
-                p.Add(new Phrase(order.Branch.Name + "\n\n", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
-                p.Add(new Phrase("Proveedor\n", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
-                p.Add(new Phrase(order.Provider.Name + "\n\n", FontFactory.GetFont(FontFactory.HELVETICA, 11)));
-
-                // Encabezado artículos
-                Paragraph header = new Paragraph();
-                header.Add(new Phrase("Artículos:", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
-                header.Add(new Chunk(new iTextSharp.text.pdf.draw.VerticalPositionMark()));
-                header.Add(new Phrase("Cantidad", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
-                p.Add(header);
-
-                p.Add(new Phrase("\n")); // espacio extra antes de los artículos
-
-                // Tabla para artículos (2 columnas)
-                PdfPTable table = new PdfPTable(2);
-                table.WidthPercentage = 100;
-                table.SetWidths(new float[] { 80, 20 }); // descripción 80%, cantidad 20%
-                table.SpacingBefore = 10f;
-                table.SpacingAfter = 10f;
-
-                foreach (var line in order.Lines.Where(l => l.IsActive == 1))
+                System.Diagnostics.Process.Start(new ProcessStartInfo
                 {
-                    // Celda de descripción
-                    PdfPCell descCell = new PdfPCell(
-                        new Phrase(line.Product.Description, FontFactory.GetFont(FontFactory.HELVETICA, 11))
-                    );
-                    descCell.Border = 0;
-                    descCell.PaddingBottom = 4;
+                    FileName = sfd.FileName,
+                    UseShellExecute = true
+                });
 
-                    // Línea punteada inferior
-                    descCell.CellEvent = new DottedBorderVerticalAndBottom();
-
-                    // Celda de cantidad
-                    PdfPCell qtyCell = new PdfPCell(
-                        new Phrase(line.Quantity.ToString("0.##"), FontFactory.GetFont(FontFactory.HELVETICA, 11))
-                    );
-                    qtyCell.Border = 0;
-                    qtyCell.HorizontalAlignment = Element.ALIGN_CENTER;
-                    qtyCell.PaddingBottom = 4;
-
-                    // Línea vertical punteada + línea horizontal punteada
-                    qtyCell.CellEvent = new DottedBorderVerticalAndBottom();
-
-                    table.AddCell(descCell);
-                    table.AddCell(qtyCell);
-                }
-
-                p.Add(table);
-
-                // Espacio antes de la firma (aprox. 5 cm)
-                p.Add(new Phrase("\n\n\n\n\n\n\n\n\n"));
-
-                p.Add(new Phrase("Nombre y firma", FontFactory.GetFont(FontFactory.HELVETICA_BOLD, 12)));
-
-                ct.AddElement(p);
-                ct.Go();
-
-                cardIndex++;
             }
-
-            doc.Close();
         }
-
-        public class DottedBorderVerticalAndBottom : IPdfPCellEvent
-        {
-            public void CellLayout(PdfPCell cell, iTextSharp.text.Rectangle position, PdfContentByte[] canvases)
-            {
-                PdfContentByte cb = canvases[PdfPTable.LINECANVAS];
-                cb.SetLineDash(2f, 2f);
-
-                // Línea vertical punteada
-                cb.MoveTo(position.Left, position.Bottom);
-                cb.LineTo(position.Left, position.Top);
-                cb.Stroke();
-
-                // Línea horizontal punteada
-                cb.MoveTo(position.Left, position.Bottom);
-                cb.LineTo(position.Right, position.Bottom);
-                cb.Stroke();
-            }
-
-        }
-
-
-
-
 
         private void btnExit_Click(object sender, EventArgs e)
         {
