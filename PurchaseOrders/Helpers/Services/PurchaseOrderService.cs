@@ -75,6 +75,7 @@ namespace PurchaseOrders.Services
         {
             return _ctx.Products
                 .Where(p => p.IsActive)
+                .OrderBy(p => p.Description)
                 .ToList();
         }
 

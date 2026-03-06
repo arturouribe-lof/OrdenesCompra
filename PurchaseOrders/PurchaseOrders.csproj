@@ -89,9 +89,9 @@
   <ItemGroup>
     <Compile Include="Controllers\PurchaseOrderController.cs" />
     <Compile Include="Data\AppDbContext.cs" />
-    <Compile Include="Helpers\PurchaseOrderPdfGenerator.cs" />
+    <Compile Include="Models\PurchaseOrderPdfGenerator.cs" />
     <Compile Include="Repositories\IRepository.cs" />
-    <Compile Include="Services\PurchaseOrderService.cs" />
+    <Compile Include="Helpers\Services\PurchaseOrderService.cs" />
     <Compile Include="Models\Branch.cs" />
     <Compile Include="Models\Product.cs" />
     <Compile Include="Models\Provider.cs" />

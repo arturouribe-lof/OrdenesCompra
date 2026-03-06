@@ -22,18 +22,19 @@ namespace PurchaseOrders.Views
     {
         private readonly PurchaseOrderController _controller;
         private List<PurchaseOrder> _orders;
+        private string _lastSortedColumn = "";
+        private bool _ascending = true;
 
         public MainForm(PurchaseOrderController controller)
         {
             InitializeComponent();
             _controller = controller;
+            this.AutoScaleMode = AutoScaleMode.None;
 
             ConfigureGrid();
 
             // Asociamos el evento Load al método MainForm_Load
             this.Load += MainForm_Load;
-
-            this.Width = dgvOrders.PreferredSize.Width-36;
         }
 
         private void MainForm_Load(object sender, EventArgs e)
@@ -121,6 +122,8 @@ namespace PurchaseOrders.Views
             dgvOrders.AutoGenerateColumns = false;
             dgvOrders.Columns.Clear();
 
+            
+
             dgvOrders.Columns.Add(new DataGridViewTextBoxColumn
             {
                 Name = "Id",
@@ -162,6 +165,11 @@ namespace PurchaseOrders.Views
                 HeaderText = "Activo",
                 DataPropertyName = "IsActive"
             });
+
+            foreach (DataGridViewColumn col in dgvOrders.Columns)
+            {
+                col.SortMode = DataGridViewColumnSortMode.Programmatic;
+            }
         }
 
         private void LoadOrders()
@@ -349,6 +357,32 @@ namespace PurchaseOrders.Views
                 });
 
             }
+        }
+        private void dgvOrders_ColumnHeaderMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            string columnName = dgvOrders.Columns[e.ColumnIndex].DataPropertyName;
+
+            if (_lastSortedColumn == columnName)
+                _ascending = !_ascending;
+            else
+                _ascending = true;
+
+            _lastSortedColumn = columnName;
+
+            var sorted = _orders.Select(x => new
+            {
+                x.Id,
+                BranchName = x.Branch.Name,
+                ProviderName = x.Provider.Name,
+                x.InvoiceNumber,
+                x.CreatedAt,
+                IsActive = !x.IsDeleted
+            });
+
+            if (_ascending)
+                dgvOrders.DataSource = sorted.OrderBy(x => x.GetType().GetProperty(columnName).GetValue(x, null)).ToList();
+            else
+                dgvOrders.DataSource = sorted.OrderByDescending(x => x.GetType().GetProperty(columnName).GetValue(x, null)).ToList();
         }
 
         private void btnExit_Click(object sender, EventArgs e)
